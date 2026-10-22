@@ -1,0 +1,49 @@
+
+{% extends 'shop/base.html' %}
+{% load static %}
+
+{% block title %}{{ product.name }} · ShopLite{% endblock %}
+
+{% block content %}
+
+<div class="detail-layout">
+
+    <div class="detail-image">
+        {% if product.name == "Wireless Headphones" %}
+            <img src="{% static 'images/headphones.png' %}" alt="{{ product.name }}">
+        {% elif product.image_url %}
+            <img src="{{ product.image_url }}" alt="{{ product.name }}">
+        {% else %}
+            <div class="placeholder">SHOPLITE</div>
+        {% endif %}
+    </div>
+
+    <div>
+        <p class="eyebrow">PRODUCT DETAILS</p>
+
+        <h1>{{ product.name }}</h1>
+
+        <p class="price">₹{{ product.price }}</p>
+
+        <p>{{ product.description }}</p>
+
+        <p class="muted">Available stock: {{ product.stock }}</p>
+
+        <form method="post" action="{% url 'add_to_cart' product.id %}">
+            {% csrf_token %}
+
+            <input type="hidden" name="next" value="{% url 'product_detail' product.id %}">
+
+            <button class="button" {% if product.stock == 0 %}disabled{% endif %}>
+                Add to cart
+            </button>
+        </form>
+
+        <p>
+            <a href="{% url 'home' %}">← Back to products</a>
+        </p>
+    </div>
+
+</div>
+
+{% endblock %}

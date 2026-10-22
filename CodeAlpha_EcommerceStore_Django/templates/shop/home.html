@@ -1,0 +1,64 @@
+
+{% extends 'shop/base.html' %}
+{% load static %}
+
+{% block title %}Products · ShopLite{% endblock %}
+
+{% block content %}
+
+<section class="hero">
+    <div>
+        <p class="eyebrow">SIMPLE E-COMMERCE DEMO</p>
+        <h1>Find something you'll love.</h1>
+        <p>Browse products, add them to your cart and place a demo order.</p>
+    </div>
+    <a class="button" href="{% url 'cart' %}">View cart →</a>
+</section>
+
+<div class="section-heading">
+    <h2>Featured products</h2>
+    <span>{{ products|length }} products</span>
+</div>
+
+<div class="grid">
+    {% for product in products %}
+    <article class="product-card">
+
+        <a href="{% url 'product_detail' product.id %}" class="product-image">
+            {% if product.name == "Wireless Headphones" %}
+                <img src="{% static 'images/headphones.png' %}" alt="{{ product.name }}">
+            {% elif product.image_url %}
+                <img src="{{ product.image_url }}" alt="{{ product.name }}">
+            {% else %}
+                <div class="placeholder">SHOPLITE</div>
+            {% endif %}
+        </a>
+
+        <div class="product-info">
+            <a class="product-name" href="{% url 'product_detail' product.id %}">
+                {{ product.name }}
+            </a>
+
+            <p class="muted">{{ product.description|truncatechars:85 }}</p>
+
+            <div class="card-bottom">
+                <strong>₹{{ product.price }}</strong>
+
+                <form method="post" action="{% url 'add_to_cart' product.id %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="next" value="{% url 'home' %}">
+                    <button class="button small" type="submit">Add to cart</button>
+                </form>
+            </div>
+        </div>
+
+    </article>
+    {% empty %}
+    <div class="empty">
+        <h2>No products yet</h2>
+        <p>Add demo products in Django admin or run the seed command.</p>
+    </div>
+    {% endfor %}
+</div>
+
+{% endblock %}
