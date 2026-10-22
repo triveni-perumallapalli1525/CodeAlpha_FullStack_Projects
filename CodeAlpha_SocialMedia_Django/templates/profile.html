@@ -1,0 +1,90 @@
+
+{% extends "social/base.html" %}
+
+{% block title %}{{ profile_user.username }} | ConnectHub{% endblock %}
+
+{% block content %}
+<div class="card">
+    <h2>👤 {{ profile_user.username }}'s Profile</h2>
+
+    <p>
+        <strong>Followers:</strong> {{ followers_count }}
+        &nbsp; | &nbsp;
+        <strong>Following:</strong> {{ following_count }}
+    </p>
+
+    {% if profile.profile_picture %}
+        <img
+            src="{{ profile.profile_picture }}"
+            alt="Profile picture"
+            style="width:100px;height:100px;border-radius:50%;object-fit:cover;"
+        >
+    {% endif %}
+
+    <p>{{ profile.bio|default:"No bio added yet." }}</p>
+
+    {% if request.user == profile_user %}
+        <hr>
+        <h3>Edit Your Profile</h3>
+
+        <form method="post">
+            {% csrf_token %}
+
+            <label>Bio</label>
+            <textarea name="bio" rows="3"
+                placeholder="Write something about yourself...">{{ profile.bio }}</textarea>
+
+            <label>Profile Picture URL</label>
+            <input
+                type="url"
+                name="profile_picture"
+                value="{{ profile.profile_picture }}"
+                placeholder="https://example.com/photo.jpg"
+            >
+
+            <button type="submit">Save Profile</button>
+        </form>
+
+    {% elif request.user.is_authenticated %}
+        <form method="post"
+              action="{% url 'follow_user' profile_user.username %}">
+            {% csrf_token %}
+
+            {% if is_following %}
+                <button type="submit">Unfollow</button>
+            {% else %}
+                <button type="submit">Follow</button>
+            {% endif %}
+        </form>
+    {% endif %}
+</div>
+
+<h2>📝 Posts by {{ profile_user.username }}</h2>
+
+{% for post in posts %}
+    <div class="card">
+        <p>{{ post.content|linebreaksbr }}</p>
+
+        {% if post.image_url %}
+            <img
+                src="{{ post.image_url }}"
+                alt="Post image"
+                style="max-width:100%;border-radius:12px;"
+            >
+        {% endif %}
+
+        <p class="muted">
+            {{ post.created_at|date:"d M Y, h:i A" }}
+        </p>
+
+        <p>❤️ {{ post.likes.count }} Likes</p>
+        <p>💬 {{ post.comments.count }} Comments</p>
+    </div>
+{% empty %}
+    <div class="card">
+        <p>No posts yet.</p>
+    </div>
+{% endfor %}
+
+<a href="{% url 'home' %}">← Back to Home</a>
+{% endblock %}

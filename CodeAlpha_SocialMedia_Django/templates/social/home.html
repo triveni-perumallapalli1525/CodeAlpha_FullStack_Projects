@@ -1,0 +1,90 @@
+
+{% extends "social/base.html" %}
+
+{% block title %}Home | ConnectHub{% endblock %}
+
+{% block content %}
+
+{% if user.is_authenticated %}
+<div class="card">
+    <h2>Welcome, {{ user.username }}! 👋</h2>
+    <p class="muted">Share what's happening with your community.</p>
+
+    <form method="post" action="{% url 'create_post' %}">
+        {% csrf_token %}
+        <textarea name="content" rows="3"
+            placeholder="What's on your mind?" required></textarea>
+        <input type="url" name="image_url"
+            placeholder="Image URL (optional)">
+        <button type="submit">Publish Post</button>
+    </form>
+</div>
+{% else %}
+<div class="card">
+    <h2>Welcome to ConnectHub! 🌐</h2>
+    <p>Connect with people, share your thoughts, and join the conversation.</p>
+    <a href="{% url 'register' %}">Create an account</a>
+    or
+    <a href="{% url 'login' %}">Login</a>
+</div>
+{% endif %}
+
+<h2>Latest Posts</h2>
+
+{% for post in posts %}
+<div class="card">
+    <h3>
+        <a href="{% url 'profile' post.author.username %}">
+            @{{ post.author.username }}
+        </a>
+    </h3>
+    <p class="muted">{{ post.created_at|date:"M d, Y · h:i A" }}</p>
+
+    <p style="white-space: pre-wrap;">{{ post.content }}</p>
+
+    {% if post.image_url %}
+        <img src="{{ post.image_url }}" alt="Post image"
+             style="width:100%; max-height:400px; object-fit:contain; border-radius:8px;">
+    {% endif %}
+
+    <div class="actions">
+        <span>❤️ {{ post.likes.count }} likes</span>
+        <span>💬 {{ post.comments.count }} comments</span>
+    </div>
+
+    {% if user.is_authenticated %}
+    <div class="actions" style="margin-top:12px;">
+        <form method="post" action="{% url 'like_post' post.id %}">
+            {% csrf_token %}
+            <input type="hidden" name="next" value="/">
+            <button type="submit">Like / Unlike</button>
+        </form>
+    </div>
+
+    <form method="post" action="{% url 'add_comment' post.id %}"
+          style="margin-top:12px;">
+        {% csrf_token %}
+        <input type="hidden" name="next" value="/">
+        <input type="text" name="content"
+               placeholder="Write a comment..." required>
+        <button type="submit">Comment</button>
+    </form>
+    {% endif %}
+
+    {% for comment in post.comments.all %}
+    <p>
+        <strong>{{ comment.author.username }}</strong>:
+        {{ comment.content }}
+    </p>
+    {% empty %}
+    <p class="muted">No comments yet.</p>
+    {% endfor %}
+</div>
+{% empty %}
+<div class="card">
+    <h3>No posts yet!</h3>
+    <p>Be the first to share something with the community.</p>
+</div>
+{% endfor %}
+
+{% endblock %}
